@@ -1,8 +1,6 @@
-import time
 import cv2
 import numpy as np
 from fer import FER
-import pprint
 import threading
 
 cam = cv2.VideoCapture(0)
@@ -23,15 +21,16 @@ emotions_list = []
 
 
 # Function to draw rectangles on the image
-def draw_reference_id(image, rectangle, emotion):
+def draw_reference_id(image, rectangle, emotion, id):
     if rectangle:
         x, y, _, _ = rectangle
-        reference_id_text = "Ref ID: 123"  # You can replace 123 with your reference ID
+        reference_id_text = f"Ref ID: {id}"  # You can replace 123 with your reference ID
         cv2.putText(image, reference_id_text, (x, y - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
         cv2.putText(image, emotion, (x, y - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
 
 def draw_rectangles_and_emotions(image, rectangles, emotions):
+    id=0
     for rect, emotion_dict in zip(rectangles, emotions):
         x, y, width, height = rect
         cv2.rectangle(image, (x, y), (x + width, y + height), (0, 255, 0), 2)
@@ -51,7 +50,7 @@ def draw_rectangles_and_emotions(image, rectangles, emotions):
             if i == 0:
                 highest_emotion = emotion
                 # Draw reference ID on the main frame with the highest emotion
-                draw_reference_id(image, rect, highest_emotion)
+                draw_reference_id(image, rect, highest_emotion, id)
 
         cv2.imshow("Emotions", emotions_window)
 
