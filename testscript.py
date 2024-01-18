@@ -1,2 +1,8 @@
+import time
+
 import tensorflow as tf
-print(tf.config.list_physical_devices('GPU'))
+
+print(tf.test.gpu_device_name())
+
+while True:
+    time.sleep(1)

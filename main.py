@@ -16,9 +16,21 @@ cam.set(cv2.CAP_PROP_SATURATION, 64)  # call imshow() using plt object
 lock = threading.Lock()
 current_img = None
 
+# Define the list to store multiple rectangle coordinates
+rectangle_list = []
+
+
+# Function to draw rectangles on the image
+def draw_rectangles(image, rectangles):
+    for rect in rectangles:
+        x, y, width, height = rect
+        cv2.rectangle(image, (x, y), (x + width, y + height), (0, 255, 0), 2)
+
+
 # Define the function that will run in a separate thread
 def emotion_thread():
     global current_img
+    global rectangle_list
     while True:
         # Acquire the lock to safely access the current_img variable
         with lock:
@@ -27,8 +39,20 @@ def emotion_thread():
         if img_copy is not None:
             detector = FER()
             result = detector.detect_emotions(img_copy)
-            pprint.pprint(result)
-        time.sleep(1)
+
+            # Clear the existing rectangle list
+            rectangle_list = []
+
+            if result:
+                for results in result:
+                    if "box" in results and len(results["box"]) == 4:
+                        x, y, width, height = results["box"]
+                        rectangle_list.append((x, y, width, height))
+
+                pprint.pprint(result)
+
+        time.sleep(0.2)
+
 
 # Start the new thread
 emotion_thread = threading.Thread(target=emotion_thread)
@@ -43,7 +67,13 @@ while True:
     with lock:
         current_img = img.copy()
 
-    cv2.imshow("Webcam", img)
+    image_with_rectangles = img.copy()
+
+    # Draw rectangles on the image if there is at least one entry
+    if rectangle_list:
+        draw_rectangles(image_with_rectangles, rectangle_list)
+
+    cv2.imshow("Webcam", image_with_rectangles)
     if cv2.waitKey(10) & 0xFF == 27:
         break
 
